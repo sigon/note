@@ -144,7 +144,7 @@ def api_create_comment(id, request, *, content):
     return comment
 
 
-@post('/api/;comments/{id}/delete')
+@post('/api/comments/{id}/delete')
 def api_delete_comments(id, request):
     check_admin(request)
     c = yield from Comment.find(id)
