@@ -16,6 +16,7 @@ from datetime import datetime
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
 
+from config import configs
 import orm
 from coroweb import add_routes, add_static
 
@@ -131,7 +132,7 @@ def datetime_filter(t):
 
 @asyncio.coroutine
 def init(loop):
-    yield from orm.create_pool(loop=loop, host='127.0.0.1', port=3306, user='root', password='', db='test')
+    yield from orm.create_pool(loop=loop, **configs.db)
     app = web.Application(loop=loop, middlewares=[
         logger_factory, auth_factory, response_factory
     ])
