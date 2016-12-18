@@ -4,7 +4,11 @@
 from apis import APIValueError, APIPermissionError, Page, APIResourceNotFoundError
 from models import Blog, Comment
 from coroweb import *
-from markdown2 import Markdown
+import markdown2
+import mistune
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import html
 
 
 @get('/manage/')
@@ -112,8 +116,10 @@ def get_blog(id):
     comments = d['comments']
     for c in comments:
         c.html_content = text2html(c.content)
-    markdowner = Markdown()
-    blog.html_content = markdowner.convert(blog.content)
+    # blog.html_content = markdown2.markdown(blog.content, extras=["fenced-code-blocks", "code-color"])
+    renderer = HighlightRenderer('Python')
+    markdown = mistune.Markdown(renderer=renderer)
+    blog.html_content = markdown(blog.content)
     return {
         '__template__': 'blog.html',
         'blog': blog,
@@ -152,6 +158,22 @@ def api_delete_comments(id, request):
         raise APIResourceNotFoundError('Comment')
     yield from c.remove()
     return dict(id=id)
+
+
+class HighlightRenderer(mistune.Renderer):
+    def __init__(self, lang):
+        self.lang = lang
+        super(HighlightRenderer, self).__init__()
+
+    def block_code(self, code, lang):
+        if not lang:
+            lang = self.lang
+            if not lang:
+                return '\n<pre><code>%s</code></pre>\n' % \
+                    mistune.escape(code)
+        lexer = get_lexer_by_name(lang, stripall=True)
+        formatter = html.HtmlFormatter()
+        return highlight(code, lexer, formatter)
 
 
 def text2html(text):
