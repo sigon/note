@@ -47,7 +47,9 @@ $(function () {
         initVM({
             name: '',
             summary: '',
-            content: ''
+            content: '',
+            code_lang: 'Python',
+            keywords: ''
         });
     }
 });
@@ -88,6 +90,18 @@ $(function () {
                 <label class="uk-form-label">摘要:</label>
                 <div class="uk-form-controls">
                     <textarea v-model="summary" rows="4" name="summary" placeholder="摘要" class="uk-width-1-1" style="resize:none;"></textarea>
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">代码语言:</label>
+                <div class="uk-form-controls">
+                    <input v-model="code_lang" name="code_lang" type="text" placeholder="Python" class="uk-width-1-1">
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">关键词:</label>
+                <div class="uk-form-controls">
+                    <input v-model="keywords" name="keywords" type="text" placeholder="关键词" class="uk-width-1-1">
                 </div>
             </div>
             <div class="uk-form-row">

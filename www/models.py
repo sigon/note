@@ -2,8 +2,10 @@ import time, uuid
 
 from orm import *
 
+
 def next_id():
    return '%015d%s000' % (int(time.time() * 1000), uuid.uuid4().hex)
+
 
 class User(Model):
 
@@ -17,6 +19,7 @@ class User(Model):
     image = StringField(ddl='varchar(500)')
     created_at = FloatField(default=time.time)
 
+
 class Blog(Model):
     __table__ = 'blog'
 
@@ -27,7 +30,11 @@ class Blog(Model):
     name = StringField(ddl='varchar(50)')
     summary = StringField(ddl='varchar(200)')
     content = TextField()
+    code_lang = StringField(ddl='varchar(50)')
+    keywords = StringField(ddl='varchar(50)')
     created_at = FloatField(default=time.time)
+    modified_at = FloatField()
+
 
 class Comment(Model):
     __table__ = 'comment'

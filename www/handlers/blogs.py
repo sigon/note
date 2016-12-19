@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import time
+from pygments.formatters import html
 
-from apis import APIValueError, APIPermissionError, Page, APIResourceNotFoundError
+from apis import APIValueError, APIPermissionError, APIResourceNotFoundError
 from models import Blog, Comment
 from coroweb import *
-import markdown2
 import mistune
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
-from pygments.formatters import html
 
 
 @get('/manage/')
@@ -59,7 +59,7 @@ def api_get_blog(*, id):
 
 @post('/api/blogs/{id}')
 @asyncio.coroutine
-def api_update_blog(id, request, *, name, summary, content):
+def api_update_blog(id, request, *, name, summary, content, code_lang, keywords):
     check_admin(request)
     blog = yield from Blog.find(id)
     if not name or not name.strip():
@@ -71,6 +71,9 @@ def api_update_blog(id, request, *, name, summary, content):
     blog.name = name.strip()
     blog.summary = summary.strip()
     blog.content = content.strip()
+    blog.code_lang = code_lang.strip()
+    blog.keywords = keywords.strip()
+    blog.modified_at = time.time()
     yield from blog.update()
     return blog
 
@@ -94,7 +97,7 @@ def api_blogs(*, page='1'):
 
 @post('/api/blogs')
 @asyncio.coroutine
-def api_create_blog(request, *, name, summary, content):
+def api_create_blog(request, *, name, summary, content, code_lang, keywords):
     check_admin(request)
     if not name or not name.strip():
         raise APIValueError('name', 'name cannot be empty.')
@@ -103,7 +106,7 @@ def api_create_blog(request, *, name, summary, content):
     if not content or not content.strip():
         raise APIValueError('content', 'content cannot be empty.')
     blog = Blog(user_id=request.__user__.id, user_name=request.__user__.name, user_image=request.__user__.image,
-                name=name.strip(), summary=summary.strip(), content=content.strip())
+                name=name.strip(), summary=summary.strip(), content=content.strip(), code_lang=code_lang.strip(), keywords=keywords.strip())
     yield from blog.save()
     return blog
 
@@ -117,7 +120,7 @@ def get_blog(id):
     for c in comments:
         c.html_content = text2html(c.content)
     # blog.html_content = markdown2.markdown(blog.content, extras=["fenced-code-blocks", "code-color"])
-    renderer = HighlightRenderer('Python')
+    renderer = HighlightRenderer(blog.code_lang)
     markdown = mistune.Markdown(renderer=renderer)
     blog.html_content = markdown(blog.content)
     return {
