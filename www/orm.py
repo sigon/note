@@ -330,6 +330,20 @@ class Model(dict, metaclass=ModelMetaclass):
         rs = yield from select(' '.join(sql), args)
         return {'page': page, '%ss' % cls.__table__: [cls(**r) for r in rs._result]}
 
+
+    @classmethod
+    @asyncio.coroutine
+    def findField(cls, fields, where=None, args=None):
+        sql = ['select %s from `%s`' % (', '.join(fields), cls.__table__)]
+        if where:
+            sql.append('where')
+            sql.append(where)
+        rs = yield from select(' '.join(sql), args)
+        if len(rs._result) == 0:
+            return None
+        return rs._result
+
+
     @classmethod
     @asyncio.coroutine
     def findNumber(cls, selectField, where=None, args=None):

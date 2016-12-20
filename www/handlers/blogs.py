@@ -111,6 +111,20 @@ def api_create_blog(request, *, name, summary, content, code_lang, keywords):
     return blog
 
 
+@get('/blog/keyword/{keyword}')
+@asyncio.coroutine
+def get_keyword_blog(keyword, page='1'):
+    page_index = get_page_index(page)
+    d = yield from Blog.findAll('keywords like ?', [keyword], orderBy='created_at desc', page_index=page_index)
+    resultList = yield from Blog.findField(['keywords',])
+    keywords = set([x.lower() for y in resultList if y['keywords'] != None for x in y['keywords'].split(',')])
+    d['keyword'] = keyword
+    d['keywords'] = keywords
+    d['__template__'] = 'blogs.html'
+    return d
+
+
+
 @get('/blog/{id}')
 @asyncio.coroutine
 def get_blog(id):

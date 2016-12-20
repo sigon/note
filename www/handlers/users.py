@@ -33,6 +33,9 @@ def index(request, *, page='1'):
     page_index = get_page_index(page)
 
     d = yield from Blog.findAll(orderBy='created_at desc', page_index=page_index)
+    resultList = yield from Blog.findField(['keywords',])
+    keywords = set([x.lower() for y in resultList if y['keywords'] != None for x in y['keywords'].split(',')])
+    d['keywords'] = keywords
     d['__template__'] = 'blogs.html'
     return d
 
