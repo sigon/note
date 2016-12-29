@@ -59,7 +59,7 @@ def api_get_blog(*, id):
 
 @post('/api/blogs/{id}')
 @asyncio.coroutine
-def api_update_blog(id, request, *, name, summary, content, code_lang, keywords):
+def api_update_blog(id, request, *, name, summary, content, keywords):
     check_admin(request)
     blog = yield from Blog.find(id)
     if not name or not name.strip():
@@ -71,7 +71,6 @@ def api_update_blog(id, request, *, name, summary, content, code_lang, keywords)
     blog.name = name.strip()
     blog.summary = summary.strip()
     blog.content = content.strip()
-    blog.code_lang = code_lang.strip()
     blog.keywords = keywords.strip()
     blog.modified_at = time.time()
     yield from blog.update()
@@ -106,7 +105,7 @@ def api_create_blog(request, *, name, summary, content, code_lang, keywords):
     if not content or not content.strip():
         raise APIValueError('content', 'content cannot be empty.')
     blog = Blog(user_id=request.__user__.id, user_name=request.__user__.name, user_image=request.__user__.image,
-                name=name.strip(), summary=summary.strip(), content=content.strip(), code_lang=code_lang.strip(), keywords=keywords.strip())
+                name=name.strip(), summary=summary.strip(), content=content.strip(), keywords=keywords.strip())
     yield from blog.save()
     return blog
 
@@ -134,7 +133,7 @@ def get_blog(id):
     for c in comments:
         c.html_content = text2html(c.content)
     # blog.html_content = markdown2.markdown(blog.content, extras=["fenced-code-blocks", "code-color"])
-    renderer = HighlightRenderer(blog.code_lang)
+    renderer = HighlightRenderer()
     markdown = mistune.Markdown(renderer=renderer)
     blog.html_content = markdown(blog.content)
     return {
@@ -178,15 +177,10 @@ def api_delete_comments(id, request):
 
 
 class HighlightRenderer(mistune.Renderer):
-    def __init__(self, lang):
-        self.lang = lang
-        super(HighlightRenderer, self).__init__()
 
     def block_code(self, code, lang):
         if not lang:
-            lang = self.lang
-            if not lang:
-                return '\n<pre><code>%s</code></pre>\n' % \
+            return '\n<pre><code>%s</code></pre>\n' % \
                     mistune.escape(code)
         lexer = get_lexer_by_name(lang, stripall=True)
         formatter = html.HtmlFormatter()

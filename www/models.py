@@ -30,7 +30,6 @@ class Blog(Model):
     name = StringField(ddl='varchar(50)')
     summary = StringField(ddl='varchar(200)')
     content = TextField()
-    code_lang = StringField(ddl='varchar(50)')
     keywords = StringField(ddl='varchar(50)')
     created_at = FloatField(default=time.time)
     modified_at = FloatField()
